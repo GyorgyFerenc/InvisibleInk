@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <cstdint>
 #include <fstream>
 #include <iterator>
 
@@ -13,7 +14,7 @@ std::vector<byte> read_data_to_be_encrypted(std::string file) {
     std::ifstream input(file, std::ios::binary);
 
     if (!input.is_open()) {
-        // TODO: add error msg
+        error_file_can_not_be_read(file);
     }
 
     // get length of file
@@ -31,7 +32,7 @@ std::vector<byte> read_data_to_be_encrypted(std::string file) {
     result.insert(
         result.begin(), std::istream_iterator<byte>(input), std::istream_iterator<byte>());
 
-    return std::move(result);
+    return result;
 }
 // gets the the bit from byte b in the position pos
 // bits are numbered from most significant to least
@@ -83,6 +84,7 @@ void encrypt_into_pixels(rgba& pixel1, rgba& pixel2, byte data) {
         pixel2.alpha -= get_bit(data, 7);
 }
 
+// encrypts the length into the first 4 byte, which is the first 8 pixel
 void encrypt_length_of_data(image& img, uint32_t lenght) {
     byte first_byte = ((byte*)&lenght)[0];   // Getting the first byte of length
     byte second_byte = ((byte*)&lenght)[1];  // Getting the second byte of length
@@ -102,14 +104,18 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
     }
 }
 
-void encrypt(const cli_info& info) {
-    // read the key
-    // read the input file
-    // encrypt to the png
-    // write to output file
+/*
+    Do the encryption pipeline.
 
-    auto key = load_png(info.key_file);
-    auto data = read_data_to_be_encrypted(info.input_file);
+    Load key png.
+    Load data to be encrypted.
+    Check for enough space in the photo.
+    Encrypt the data into the image.
+    Save image.
+*/
+void encrypt(std::string key_file, std::string input_file, std::string output_file) {
+    auto key = load_png(key_file);
+    auto data = read_data_to_be_encrypted(input_file);
 
     uint32_t length_of_data = data.size();
 
@@ -133,9 +139,10 @@ void encrypt(const cli_info& info) {
         encrypt_into_pixels(pixel1, pixel2, one_byte);
     }
 
-    save_png(key, info.output_file);
+    save_png(key, output_file);
 }
 
+// Extractes the byte from the pixels.
 byte get_byte(rgba& img1_pixel1, rgba& img1_pixel2, rgba& img2_pixel1, rgba& img2_pixel2) {
     bool bit0 = img1_pixel1.red != img2_pixel1.red;
     bool bit1 = img1_pixel1.green != img2_pixel1.green;
@@ -151,6 +158,8 @@ byte get_byte(rgba& img1_pixel1, rgba& img1_pixel2, rgba& img2_pixel1, rgba& img
 
     return b;
 }
+
+// Read the length of the data using the images.
 uint32_t read_length(const image& img1, const image& img2) {
     uint32_t length;
     for (size_t i = 0; i < 8; i += 2) {
@@ -167,24 +176,27 @@ uint32_t read_length(const image& img1, const image& img2) {
     return length;
 }
 
-void save_byte_array(std::string file, std::vector<byte>& bytes) {
+void save_decrypted_data(std::string file, std::vector<byte>& bytes) {
     std::ofstream output{file, std::ios::binary};
 
     if (!output.is_open()) {
-        // TODO: error
+        error_file_can_not_be_read(file);
     }
 
     output.write((char*)bytes.data(), bytes.size());
 }
 
-void decrypt(cli_info info) {
-    // read key
-    // read input file
-    // decrypt using the key to byte array
-    // save byte array
+/*
+    Do the encryption pipeline.
 
-    auto key = load_png(info.key_file);
-    auto encrypted_png = load_png(info.input_file);
+    Load key png.
+    Load the encrypted png.
+    Decrypt the data using the two pngs.
+    Save the decypted data into the output file.
+*/
+void decrypt(std::string key_file, std::string input_file, std::string output_file) {
+    auto key = load_png(key_file);
+    auto encrypted_png = load_png(input_file);
 
     auto lenght = read_length(key, encrypted_png);
 
@@ -200,18 +212,19 @@ void decrypt(cli_info info) {
         byte b = get_byte(img1_pixel1, img1_pixel2, img2_pixel1, img2_pixel2);
         output.push_back(b);
     }
-    save_byte_array(info.output_file, output);
+    save_decrypted_data(output_file, output);
 }
 }  // namespace Private
 
+// Entry point of the encrypting/decrypting
 void solve(cli_info info) {
     switch (info.mode) {
         case ENCRYPT:
-            Private::encrypt(info);
+            Private::encrypt(info.key_file, info.input_file, info.output_file);
             break;
 
         case DECRYPT:
-            Private::decrypt(info);
+            Private::decrypt(info.key_file, info.input_file, info.output_file);
             break;
     }
 }

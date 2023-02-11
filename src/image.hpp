@@ -1,12 +1,12 @@
 #include <vector>
+#include <cstdint>
 
 #include "../lib/lodepng/lodepng.h"
 #include "ui.hpp"
 
 using byte = unsigned char;
-using uint = unsigned int;
 
-// an RGBA color with 1 byte depth in each channel
+// an RGBA color with 8 bit depth in each channel
 struct rgba {
     byte red;
     byte green;
@@ -16,18 +16,19 @@ struct rgba {
 
 // An image in memory
 struct image {
-    unsigned int      width;
-    unsigned int      height;
+    uint32_t              width;
+    uint32_t              height;
     std::vector<rgba> pixels;
 };
 
 // loads the png from the file and returns it
 image load_png(std::string file) {
-    std::vector<byte> flat_image;  // the raw pixels
-    uint              width, height;
+    // raw image in memory, RGBARGBA...
+    std::vector<byte> flat_image;
+    uint32_t              width, height;
 
     // decode
-    uint error = lodepng::decode(flat_image, width, height, file);
+    uint32_t error = lodepng::decode(flat_image, width, height, file);
 
     // if there's an error, display it
     if (error) {
@@ -51,6 +52,7 @@ image load_png(std::string file) {
     }
     return image_to_return;
 }
+
 // saves the png to the file given
 void save_png(const image& png, std::string file) {
     std::vector<byte> flat_image;  // the raw pixels

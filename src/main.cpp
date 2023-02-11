@@ -8,5 +8,6 @@ int main(int argc, char const* argv[]) {
         print_help();
     }
     solve(info);
-    return 0;
+
+    return exit_code::SUCCES;
 }

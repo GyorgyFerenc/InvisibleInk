@@ -25,7 +25,7 @@ cli_info parse(int argc, char const* argv[]) {
 
     cli_info info{};
 
-    for (size_t i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         std::string arg{argv[i]};
 
         if (arg == "-h") {
