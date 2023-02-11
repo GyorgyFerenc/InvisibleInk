@@ -2,8 +2,11 @@
 #include <iostream>
 
 namespace Private {
+const std::string RESET = "\e[0m";
+const std::string RED = "\e[1;31m";
+
 void print_error(std::string text) {
-    std::cout << "[ERROR] " << text << std::endl;
+    std::cout << RED << "[ERROR] " << RESET << text << std::endl;
 }
 }  // namespace Private
 
@@ -22,13 +25,13 @@ void error_no_argument() {
 
 // Shows error message and exists the program
 void error_loading_png(std::string file, std::string png_error) {
-    Private::print_error(file + ": error at loading png");
+    Private::print_error("error at loading png: " + file);
     Private::print_error(png_error);
     exit(error_code::PNG_LOAD);
 }
 // Shows error message and exists the program
 void error_saving_png(std::string file, std::string png_error) {
-    Private::print_error(file + ": error at saving png");
+    Private::print_error("error at saving png: " + file);
     Private::print_error(png_error);
     exit(error_code::PNG_SAVE);
 }
