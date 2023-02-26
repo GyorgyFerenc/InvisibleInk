@@ -1,15 +1,16 @@
 #pragma once
 
-#include <bitset>
 #include <cstdint>
 #include <fstream>
 #include <iterator>
 
 #include "cli.hpp"
 #include "image.hpp"
-#include "ui.hpp"
+#include "log.hpp"
 
 namespace Private {
+
+// Reads it as byte array
 std::vector<byte> read_data_to_be_encrypted(std::string file) {
     std::ifstream input(file, std::ios::binary);
 
@@ -34,6 +35,7 @@ std::vector<byte> read_data_to_be_encrypted(std::string file) {
 
     return result;
 }
+
 // gets the the bit from byte b in the position pos
 // bits are numbered from most significant to least
 bool get_bit(const byte& b, uint pos) {
@@ -187,7 +189,7 @@ void save_decrypted_data(std::string file, std::vector<byte>& bytes) {
 }
 
 /*
-    Do the encryption pipeline.
+    Do the decryption pipeline.
 
     Load key png.
     Load the encrypted png.

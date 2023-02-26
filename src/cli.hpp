@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-#include "ui.hpp"
+#include "log.hpp"
 
 enum encryption_mode {
     ENCRYPT,

@@ -1,5 +1,5 @@
 #include "cli.hpp"
-#include "ui.hpp"
+#include "log.hpp"
 #include "logic.hpp"
 
 int main(int argc, char const* argv[]) {
