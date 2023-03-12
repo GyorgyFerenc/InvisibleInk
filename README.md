@@ -33,7 +33,12 @@ Flag -o specifies the name of file where the data will be decrypted to.
 ```
 ./compile_release.sh
 ```
-Run the script
+Run the script to compile 
+
+```
+./compile_and_run_tests.sh 
+```
+Run the script to test 
 
 ## Dependencies
 
