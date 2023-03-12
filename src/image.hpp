@@ -2,7 +2,7 @@
 #include <cstdint>
 
 #include "../lib/lodepng/lodepng.h"
-#include "log.hpp"
+#include "io.hpp"
 
 using byte = unsigned char;
 

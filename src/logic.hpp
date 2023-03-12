@@ -4,11 +4,7 @@
 #include <fstream>
 #include <iterator>
 
-#include "cli.hpp"
 #include "image.hpp"
-#include "log.hpp"
-
-namespace Private {
 
 // Reads it as byte array
 std::vector<byte> read_data_to_be_encrypted(
@@ -62,7 +58,7 @@ void encrypt_into_pixels(rgba& pixel1,
     encrypt_bit(pixel1.green, get_bit(data, 1));
     encrypt_bit(pixel1.blue, get_bit(data, 2));
     encrypt_bit(pixel1.alpha, get_bit(data, 3));
-    
+
     encrypt_bit(pixel2.red, get_bit(data, 4));
     encrypt_bit(pixel2.green, get_bit(data, 5));
     encrypt_bit(pixel2.blue, get_bit(data, 6));
@@ -100,20 +96,12 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
 }
 
 /*
-    Do the encryption pipeline.
+    Encrypts data into the image
 
-    Load key png.
-    Load data to be encrypted.
     Check for enough space in the photo.
     Encrypt the data into the image.
-    Save image.
 */
-void encrypt(std::string key_file,
-             std::string input_file,
-             std::string output_file) {
-    auto key = load_png(key_file);
-    auto data = read_data_to_be_encrypted(input_file);
-
+void encrypt(image& key, std::vector<byte> data) {
     uint32_t length_of_data = data.size();
 
     // Every 2 pixel can hold 1 byte of information
@@ -137,8 +125,6 @@ void encrypt(std::string key_file,
 
         encrypt_into_pixels(pixel1, pixel2, one_byte);
     }
-
-    save_png(key, output_file);
 }
 
 // Extractes the byte from the pixels.
@@ -195,19 +181,10 @@ void save_decrypted_data(std::string        file,
 }
 
 /*
-    Do the decryption pipeline.
-
-    Load key png.
-    Load the encrypted png.
     Decrypt the data using the two pngs.
-    Save the decypted data into the output file.
 */
-void decrypt(std::string key_file,
-             std::string input_file,
-             std::string output_file) {
-    auto key = load_png(key_file);
-    auto encrypted_png = load_png(input_file);
-
+std::vector<byte> decrypt(image& key,
+                          image& encrypted_png) {
     auto lenght = read_length(key, encrypted_png);
 
     std::vector<byte> output;
@@ -225,23 +202,23 @@ void decrypt(std::string key_file,
                           img2_pixel2);
         output.push_back(b);
     }
-    save_decrypted_data(output_file, output);
+
+    return output;
 }
-}  // namespace Private
 
 // Entry point of the encrypting/decrypting
-void solve(cli_info info) {
-    switch (info.mode) {
-        case ENCRYPT:
-            Private::encrypt(info.key_file,
-                             info.input_file,
-                             info.output_file);
-            break;
+// void solve(cli_info info) {
+//     switch (info.mode) {
+//         case ENCRYPT:
+//             Private::encrypt(info.key_file,
+//                              info.input_file,
+//                              info.output_file);
+//             break;
 
-        case DECRYPT:
-            Private::decrypt(info.key_file,
-                             info.input_file,
-                             info.output_file);
-            break;
-    }
-}
+//         case DECRYPT:
+//             Private::decrypt(info.key_file,
+//                              info.input_file,
+//                              info.output_file);
+//             break;
+//     }
+// }
