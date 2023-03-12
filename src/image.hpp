@@ -3,7 +3,6 @@
 
 #include "../lib/lodepng/lodepng.h"
 #include "error.hpp"
-#include "io.hpp"
 
 using byte = unsigned char;
 
