@@ -22,7 +22,7 @@ enum exit_code : int {
     PNG_LOAD,
     PNG_SAVE,
     NOT_ENOUGH_SPACE,
-    FILE_CAN_NOT_BE_READ,
+    FILE_CAN_NOT_BE_OPENED,
 };
 
 // Shows the error message and exists the program
@@ -55,10 +55,10 @@ void error_not_enough_space(uint data_length,
     exit(exit_code::NOT_ENOUGH_SPACE);
 }
 // Shows error message and exists the program
-void error_file_can_not_be_read(std::string file) {
+void error_file_can_not_be_opened(std::string file) {
     Private::print_error(file +
-                         " can not be opened to read");
-    exit(exit_code::FILE_CAN_NOT_BE_READ);
+                         " can not be opened");
+    exit(exit_code::FILE_CAN_NOT_BE_OPENED);
 }
 // Prints the help text and exists the program
 void print_help() {

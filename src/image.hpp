@@ -1,7 +1,8 @@
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 #include "../lib/lodepng/lodepng.h"
+#include "error.hpp"
 #include "io.hpp"
 
 using byte = unsigned char;
@@ -16,8 +17,8 @@ struct rgba {
 
 // An image in memory
 struct image {
-    uint32_t              width;
-    uint32_t              height;
+    uint32_t          width;
+    uint32_t          height;
     std::vector<rgba> pixels;
 };
 
@@ -25,14 +26,16 @@ struct image {
 image load_png(std::string file) {
     // raw image in memory, RGBARGBA...
     std::vector<byte> flat_image;
-    uint32_t              width, height;
+    uint32_t          width, height;
 
     // decode
-    uint32_t error = lodepng::decode(flat_image, width, height, file);
+    uint32_t error =
+        lodepng::decode(flat_image, width, height, file);
 
     // if there's an error, display it
     if (error) {
-        error_loading_png(file, lodepng_error_text(error));
+        throw png_load_error{file,
+                             lodepng_error_text(error)};
     }
 
     image image_to_return;
@@ -64,10 +67,12 @@ void save_png(const image& png, std::string file) {
     }
 
     // Encode the image
-    unsigned error = lodepng::encode(file, flat_image, png.width, png.height);
+    unsigned error = lodepng::encode(
+        file, flat_image, png.width, png.height);
 
     // if there's an error, display it
     if (error) {
-        error_saving_png(file, lodepng_error_text(error));
+        throw png_save_error{file,
+                             lodepng_error_text(error)};
     }
 }

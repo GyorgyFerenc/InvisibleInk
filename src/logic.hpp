@@ -4,15 +4,15 @@
 #include <fstream>
 #include <iterator>
 
+#include "error.hpp"
 #include "image.hpp"
-
 // Reads it as byte array
 std::vector<byte> read_data_to_be_encrypted(
     std::string file) {
     std::ifstream input(file, std::ios::binary);
 
     if (!input.is_open()) {
-        error_file_can_not_be_read(file);
+        throw file_error{file};
     }
 
     // get length of file
@@ -104,13 +104,12 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
 void encrypt(image& key, std::vector<byte> data) {
     uint32_t length_of_data = data.size();
 
+    uint free_space = key.pixels.size() / 2;
     // Every 2 pixel can hold 1 byte of information
     // First 4 byte is lenght of data
-    bool enough_space =
-        length_of_data + 4 <= key.pixels.size() / 2;
+    bool enough_space = length_of_data + 4 <= free_space;
     if (!enough_space) {
-        error_not_enough_space(length_of_data,
-                               key.pixels.size() / 2);
+        throw space_error{length_of_data, free_space};
     }
 
     encrypt_length_of_data(key, length_of_data);
@@ -174,7 +173,7 @@ void save_decrypted_data(std::string        file,
     std::ofstream output{file, std::ios::binary};
 
     if (!output.is_open()) {
-        error_file_can_not_be_read(file);
+        throw file_error{file};
     }
 
     output.write((char*)bytes.data(), bytes.size());
