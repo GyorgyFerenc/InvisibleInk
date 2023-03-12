@@ -1,7 +1,13 @@
 #pragma once
 
+#include <cstdint>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <string>
+#include <vector>
+
+#include "image.hpp"
 
 namespace Private {
 const std::string RESET = "\e[0m";
@@ -56,8 +62,7 @@ void error_not_enough_space(uint data_length,
 }
 // Shows error message and exists the program
 void error_file_can_not_be_opened(std::string file) {
-    Private::print_error(file +
-                         " can not be opened");
+    Private::print_error(file + " can not be opened");
     exit(exit_code::FILE_CAN_NOT_BE_OPENED);
 }
 // Prints the help text and exists the program
@@ -134,4 +139,43 @@ cli_info parse(int argc, char const* argv[]) {
     }
 
     return info;
+}
+
+// Reads it as byte array
+std::vector<byte> read_data_to_be_encrypted(
+    std::string file) {
+    std::ifstream input(file, std::ios::binary);
+
+    if (!input.is_open()) {
+        throw file_error{file};
+    }
+
+    // get length of file
+    input.seekg(0, std::ios::end);
+    size_t length = input.tellg();
+    input.seekg(0, std::ios::beg);
+
+    // Stop eating new lines in binary mode!!!
+    input.unsetf(std::ios::skipws);
+
+    std::vector<byte> result;
+    result.reserve(length);
+
+    // read the data:
+    result.insert(result.begin(),
+                  std::istream_iterator<byte>(input),
+                  std::istream_iterator<byte>());
+
+    return result;
+}
+
+void save_decrypted_data(std::string        file,
+                         std::vector<byte>& bytes) {
+    std::ofstream output{file, std::ios::binary};
+
+    if (!output.is_open()) {
+        throw file_error{file};
+    }
+
+    output.write((char*)bytes.data(), bytes.size());
 }

@@ -1,38 +1,9 @@
 #pragma once
 
-#include <cstdint>
-#include <fstream>
-#include <iterator>
-
 #include "error.hpp"
 #include "image.hpp"
-// Reads it as byte array
-std::vector<byte> read_data_to_be_encrypted(
-    std::string file) {
-    std::ifstream input(file, std::ios::binary);
 
-    if (!input.is_open()) {
-        throw file_error{file};
-    }
-
-    // get length of file
-    input.seekg(0, std::ios::end);
-    size_t length = input.tellg();
-    input.seekg(0, std::ios::beg);
-
-    // Stop eating new lines in binary mode!!!
-    input.unsetf(std::ios::skipws);
-
-    std::vector<byte> result;
-    result.reserve(length);
-
-    // read the data:
-    result.insert(result.begin(),
-                  std::istream_iterator<byte>(input),
-                  std::istream_iterator<byte>());
-
-    return result;
-}
+namespace Private {
 
 // gets the the bit from byte b in the position pos
 // bits are numbered from most significant to least
@@ -95,37 +66,6 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
     }
 }
 
-/*
-    Encrypts data into the image
-
-    Check for enough space in the photo.
-    Encrypt the data into the image.
-*/
-void encrypt(image& key, std::vector<byte> data) {
-    uint32_t length_of_data = data.size();
-
-    uint free_space = key.pixels.size() / 2;
-    // Every 2 pixel can hold 1 byte of information
-    // First 4 byte is lenght of data
-    bool enough_space = length_of_data + 4 <= free_space;
-    if (!enough_space) {
-        throw space_error{length_of_data, free_space};
-    }
-
-    encrypt_length_of_data(key, length_of_data);
-
-    // First 4 byte is lenght of data
-    // aka first 8 pixel
-    uint i = 8;
-    for (auto&& one_byte : data) {
-        auto& pixel1 = key.pixels[i];
-        auto& pixel2 = key.pixels[i + 1];
-        i += 2;
-
-        encrypt_into_pixels(pixel1, pixel2, one_byte);
-    }
-}
-
 // Extractes the byte from the pixels.
 byte get_byte(rgba& img1_pixel1,
               rgba& img1_pixel2,
@@ -168,56 +108,62 @@ uint32_t read_length(const image& img1, const image& img2) {
     return length;
 }
 
-void save_decrypted_data(std::string        file,
-                         std::vector<byte>& bytes) {
-    std::ofstream output{file, std::ios::binary};
-
-    if (!output.is_open()) {
-        throw file_error{file};
-    }
-
-    output.write((char*)bytes.data(), bytes.size());
-}
+}  // namespace Private
 
 /*
     Decrypt the data using the two pngs.
 */
 std::vector<byte> decrypt(image& key,
                           image& encrypted_png) {
-    auto lenght = read_length(key, encrypted_png);
+    auto length = Private::read_length(key, encrypted_png);
 
     std::vector<byte> output;
-    output.reserve(lenght);
+    output.reserve(length);
 
-    for (size_t i = 8; i < 8 + lenght * 2; i += 2) {
+    for (size_t i = 8; i < 8 + length * 2; i += 2) {
         rgba img1_pixel1 = key.pixels[i];
         rgba img1_pixel2 = key.pixels[i + 1];
         rgba img2_pixel1 = encrypted_png.pixels[i];
         rgba img2_pixel2 = encrypted_png.pixels[i + 1];
 
-        byte b = get_byte(img1_pixel1,
-                          img1_pixel2,
-                          img2_pixel1,
-                          img2_pixel2);
+        byte b = Private::get_byte(img1_pixel1,
+                                   img1_pixel2,
+                                   img2_pixel1,
+                                   img2_pixel2);
         output.push_back(b);
     }
 
     return output;
 }
 
-// Entry point of the encrypting/decrypting
-// void solve(cli_info info) {
-//     switch (info.mode) {
-//         case ENCRYPT:
-//             Private::encrypt(info.key_file,
-//                              info.input_file,
-//                              info.output_file);
-//             break;
+/*
+    Encrypts data into the image
 
-//         case DECRYPT:
-//             Private::decrypt(info.key_file,
-//                              info.input_file,
-//                              info.output_file);
-//             break;
-//     }
-// }
+    Check for enough space in the photo.
+    Encrypt the data into the image.
+*/
+void encrypt(image& key, std::vector<byte> data) {
+    uint32_t length_of_data = data.size();
+
+    uint free_space = key.pixels.size() / 2;
+    // Every 2 pixel can hold 1 byte of information
+    // First 4 byte is lenght of data
+    bool enough_space = length_of_data + 4 <= free_space;
+    if (!enough_space) {
+        throw space_error{length_of_data, free_space};
+    }
+
+    Private::encrypt_length_of_data(key, length_of_data);
+
+    // First 4 byte is lenght of data
+    // aka first 8 pixel
+    uint i = 8;
+    for (auto&& one_byte : data) {
+        auto& pixel1 = key.pixels[i];
+        auto& pixel2 = key.pixels[i + 1];
+        i += 2;
+
+        Private::encrypt_into_pixels(
+            pixel1, pixel2, one_byte);
+    }
+}
