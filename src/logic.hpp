@@ -5,6 +5,21 @@
 
 namespace Private {
 
+// Test wether the code is little or big endian
+bool is_little_endian() {
+    /*
+        Assume int is 4 byte for the explanation
+        but it doesnt matter.
+
+        int test = 1
+        - hex: 00_00_00_01
+        - little endian representation: 01 | 00 | 00 | 00
+        - big endian representation: 00 | 00 | 00 | 01
+    */
+    int test = 1;
+    return ((char*)&test)[0] == 1;
+}
+
 // gets the the bit from byte b in the position pos
 // bits are numbered from most significant to least
 bool get_bit(const byte& b, uint pos) {
@@ -13,8 +28,6 @@ bool get_bit(const byte& b, uint pos) {
 }
 
 void encrypt_bit(byte& channel, bool bit) {
-    // potential optimization:
-    // x + (x == 255)*(-2) + (x != 255)
     if (channel < 255)
         channel += bit;
     else
@@ -53,8 +66,20 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
                               // length
 
     // we need to reverse it because of little endian
-    std::vector<byte> data{
-        {fourth_byte, third_byte, second_byte, first_byte}};
+    std::vector<byte> data;
+    data.reserve(4);
+
+    if (is_little_endian()) {
+        data.push_back(fourth_byte);
+        data.push_back(third_byte);
+        data.push_back(second_byte);
+        data.push_back(first_byte);
+    } else {
+        data.push_back(first_byte);
+        data.push_back(second_byte);
+        data.push_back(third_byte);
+        data.push_back(fourth_byte);
+    }
     uint i = 0;
 
     for (auto&& one_byte : data) {
@@ -91,6 +116,7 @@ byte get_byte(rgba& img1_pixel1,
 // Read the length of the data using the images.
 uint32_t read_length(const image& img1, const image& img2) {
     uint32_t length;
+    bool     little_endian = is_little_endian();
     for (size_t i = 0; i < 8; i += 2) {
         rgba img1_pixel1 = img1.pixels[i];
         rgba img1_pixel2 = img1.pixels[i + 1];
@@ -101,8 +127,14 @@ uint32_t read_length(const image& img1, const image& img2) {
                           img1_pixel2,
                           img2_pixel1,
                           img2_pixel2);
-        // because of little endian
-        ((byte*)&length)[3 - i / 2] = b;
+
+        if (little_endian) {
+            // because of little endian
+            ((byte*)&length)[3 - i / 2] = b;
+        } else {
+            // because of big endian
+            ((byte*)&length)[i / 2] = b;
+        }
     }
 
     return length;
@@ -146,6 +178,7 @@ void encrypt(image& key, std::vector<byte> data) {
     uint32_t length_of_data = data.size();
 
     uint free_space = key.pixels.size() / 2;
+    
     // Every 2 pixel can hold 1 byte of information
     // First 4 byte is lenght of data
     bool enough_space = length_of_data + 4 <= free_space;

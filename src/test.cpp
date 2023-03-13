@@ -1,6 +1,9 @@
+#include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <random>
+#include <vector>
 
 #include "logic.hpp"
 
@@ -37,10 +40,52 @@ void test_encryption_decryption() {
     for (size_t i = 0; i < byte_array.size(); i++) {
         assert(byte_array[i] == result[i]);
     }
+}
 
-    std::cout << "encryption/decryption test passed"<<std::endl;
+void test_encrypt_bit() {
+    {
+        byte channel = 0;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 1);
+        assert(channel != channel_copy);
+    }
+    {
+        byte channel = 255;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 1);
+        assert(channel != channel_copy);
+    }
+    {
+        byte channel = 0;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 0);
+        assert(channel == channel_copy);
+    }
+    {
+        byte channel = 255;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 0);
+        assert(channel == channel_copy);
+    }
+    {
+        byte channel = 100;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 1);
+        assert(channel != channel_copy);
+    }
+    {
+        byte channel = 100;
+        byte channel_copy = channel;
+        Private::encrypt_bit(channel, 0);
+        assert(channel == channel_copy);
+    }
 }
 
 int main() {
     test_encryption_decryption();
+    std::cout << "encryption/decryption test passed"
+              << std::endl;
+
+    test_encrypt_bit();
+    std::cout << "encrypt bit test passed" << std::endl;
 }
