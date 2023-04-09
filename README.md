@@ -44,6 +44,20 @@ Run the script to test
 
 [LodePNG](https://github.com/lvandeve/lodepng) for working with PNG.
 
+## Examples
+
+To look at the examples, run:
+
+```
+./compile_release.sh
+cd examples
+../build/invisible_ink -k key.png -i example1.png -o example1.txt
+../build/invisible_ink -k key.png -i example2.png -o example2.txt
+../build/invisible_ink -k key.png -i example3.png -o example3.txt
+```
+
+This will decrpyt the 3 examples into txt files, using key.png as the key.
+
 ## Specification
 
 first 4 byte is lenght of encrypted message, then lenght number of bytes
