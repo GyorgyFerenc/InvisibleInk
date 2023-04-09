@@ -53,8 +53,8 @@ void error_saving_png(std::string file,
     exit(exit_code::PNG_SAVE);
 }
 // Shows error message and exists the program
-void error_not_enough_space(uint data_length,
-                            uint free_space) {
+void error_not_enough_space(uint32_t data_length,
+                            uint32_t free_space) {
     Private::print_error("Not enough space");
     Private::print_error("Space needed: " + data_length);
     Private::print_error("Space availble: " + free_space);

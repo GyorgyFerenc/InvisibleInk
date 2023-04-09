@@ -22,8 +22,8 @@ bool is_little_endian() {
 
 // gets the the bit from byte b in the position pos
 // bits are numbered from most significant to least
-bool get_bit(const byte& b, uint pos) {
-    uint mask = 1 << (7 - pos);
+bool get_bit(const byte& b, uint32_t pos) {
+    uint32_t mask = 1 << (7 - pos);
     return (b & mask) != 0;
 }
 
@@ -74,7 +74,7 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
         data.push_back(third_byte);
         data.push_back(fourth_byte);
     }
-    uint i = 0;
+    uint32_t i = 0;
 
     for (auto&& one_byte : data) {
         auto& pixel1 = img.pixels[i];
@@ -159,7 +159,7 @@ std::vector<byte> decrypt(image& key, image& encrypted_png) {
 void encrypt(image& key, std::vector<byte> data) {
     uint32_t length_of_data = data.size();
 
-    uint free_space = key.pixels.size() / 2;
+    uint32_t free_space = key.pixels.size() / 2;
 
     // Every 2 pixel can hold 1 byte of information
     // First 4 byte is lenght of data
@@ -172,7 +172,7 @@ void encrypt(image& key, std::vector<byte> data) {
 
     // First 4 byte is lenght of data
     // aka first 8 pixel
-    uint i = 8;
+    uint32_t i = 8;
     for (auto&& one_byte : data) {
         auto& pixel1 = key.pixels[i];
         auto& pixel2 = key.pixels[i + 1];

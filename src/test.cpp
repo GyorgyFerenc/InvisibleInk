@@ -7,7 +7,7 @@
 
 #include "logic.hpp"
 
-image create_random_image(uint width, uint height) {
+image create_random_image(uint32_t width, uint32_t height) {
     image result;
     result.width = width;
     result.height = height;

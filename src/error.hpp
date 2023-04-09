@@ -11,8 +11,8 @@ struct png_save_error {
 };
 
 struct space_error {
-    uint data_length;
-    uint free_space;
+    uint32_t data_length;
+    uint32_t free_space;
 };
 
 struct file_error {

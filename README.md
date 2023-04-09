@@ -29,16 +29,29 @@ Flag -o specifies the name of file where the data will be decrypted to.
 ## Compilation
 
 ### Linux
+Run the script to compile 
 
 ```
 ./compile_release.sh
 ```
-Run the script to compile 
+Run the script to test 
 
 ```
 ./compile_and_run_tests.sh 
 ```
+
+### Windows
+Run the script to compile 
+
+```
+./compile_release.bat
+```
 Run the script to test 
+
+```
+./compile_and_run_tests.bat 
+```
+
 
 ## Dependencies
 
@@ -46,17 +59,34 @@ Run the script to test
 
 ## Examples
 
+### Linux
+
 To look at the examples, run:
 
 ```
 ./compile_release.sh
 cd examples
-../build/invisible_ink -k key.png -i example1.png -o example1.txt
-../build/invisible_ink -k key.png -i example2.png -o example2.txt
-../build/invisible_ink -k key.png -i example3.png -o example3.txt
+../build/invisible_ink -d -k key.png -i example1.png -o example1.txt
+../build/invisible_ink -d -k key.png -i example2.png -o example2.txt
+../build/invisible_ink -d -k key.png -i example3.png -o example3.txt
 ```
 
 This will decrpyt the 3 examples into txt files, using key.png as the key.
+
+### Windows
+
+To look at the examples, run:
+
+```
+./compile_release.bat
+cd examples
+../build/invisible_ink -d -k key.png -i example1.png -o example1.txt
+../build/invisible_ink -d -k key.png -i example2.png -o example2.txt
+../build/invisible_ink -d -k key.png -i example3.png -o example3.txt
+```
+
+This will decrpyt the 3 examples into txt files, using key.png as the key.
+
 
 ## Specification
 
