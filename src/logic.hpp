@@ -35,9 +35,7 @@ void encrypt_bit(byte& channel, bool bit) {
 }
 
 // encrypts 1 byte of data into two pixels
-void encrypt_into_pixels(rgba& pixel1,
-                         rgba& pixel2,
-                         byte  data) {
+void encrypt_into_pixels(rgba& pixel1, rgba& pixel2, byte data) {
     encrypt_bit(pixel1.red, get_bit(data, 0));
     encrypt_bit(pixel1.green, get_bit(data, 1));
     encrypt_bit(pixel1.blue, get_bit(data, 2));
@@ -52,18 +50,14 @@ void encrypt_into_pixels(rgba& pixel1,
 // encrypts the length into the first 4 byte, which is the
 // first 8 pixel
 void encrypt_length_of_data(image& img, uint32_t lenght) {
-    byte first_byte =
-        ((byte*)&lenght)[0];  // Getting the first byte of
-                              // length
-    byte second_byte =
-        ((byte*)&lenght)[1];  // Getting the second byte of
-                              // length
-    byte third_byte =
-        ((byte*)&lenght)[2];  // Getting the third byte of
-                              // length
-    byte fourth_byte =
-        ((byte*)&lenght)[3];  // Getting the fourth byte of
-                              // length
+    byte first_byte = ((byte*)&lenght)[0];   // Getting the first byte of
+                                             // length
+    byte second_byte = ((byte*)&lenght)[1];  // Getting the second byte of
+                                             // length
+    byte third_byte = ((byte*)&lenght)[2];   // Getting the third byte of
+                                             // length
+    byte fourth_byte = ((byte*)&lenght)[3];  // Getting the fourth byte of
+                                             // length
 
     // we need to reverse it because of little endian
     std::vector<byte> data;
@@ -92,10 +86,7 @@ void encrypt_length_of_data(image& img, uint32_t lenght) {
 }
 
 // Extractes the byte from the pixels.
-byte get_byte(rgba& img1_pixel1,
-              rgba& img1_pixel2,
-              rgba& img2_pixel1,
-              rgba& img2_pixel2) {
+byte get_byte(rgba& img1_pixel1, rgba& img1_pixel2, rgba& img2_pixel1, rgba& img2_pixel2) {
     bool bit0 = img1_pixel1.red != img2_pixel1.red;
     bool bit1 = img1_pixel1.green != img2_pixel1.green;
     bool bit2 = img1_pixel1.blue != img2_pixel1.blue;
@@ -105,10 +96,8 @@ byte get_byte(rgba& img1_pixel1,
     bool bit6 = img1_pixel2.blue != img2_pixel2.blue;
     bool bit7 = img1_pixel2.alpha != img2_pixel2.alpha;
 
-    byte b = ((1 << 7) * bit0) | ((1 << 6) * bit1) |
-             ((1 << 5) * bit2) | ((1 << 4) * bit3) |
-             ((1 << 3) * bit4) | ((1 << 2) * bit5) |
-             ((1 << 1) * bit6) | ((1 << 0) * bit7);
+    byte b = ((1 << 7) * bit0) | ((1 << 6) * bit1) | ((1 << 5) * bit2) | ((1 << 4) * bit3) |
+             ((1 << 3) * bit4) | ((1 << 2) * bit5) | ((1 << 1) * bit6) | ((1 << 0) * bit7);
 
     return b;
 }
@@ -123,10 +112,7 @@ uint32_t read_length(const image& img1, const image& img2) {
         rgba img2_pixel1 = img2.pixels[i];
         rgba img2_pixel2 = img2.pixels[i + 1];
 
-        byte b = get_byte(img1_pixel1,
-                          img1_pixel2,
-                          img2_pixel1,
-                          img2_pixel2);
+        byte b = get_byte(img1_pixel1, img1_pixel2, img2_pixel1, img2_pixel2);
 
         if (little_endian) {
             // because of little endian
@@ -145,8 +131,7 @@ uint32_t read_length(const image& img1, const image& img2) {
 /*
     Decrypt the data using the two pngs.
 */
-std::vector<byte> decrypt(image& key,
-                          image& encrypted_png) {
+std::vector<byte> decrypt(image& key, image& encrypted_png) {
     auto length = Private::read_length(key, encrypted_png);
 
     std::vector<byte> output;
@@ -158,10 +143,7 @@ std::vector<byte> decrypt(image& key,
         rgba img2_pixel1 = encrypted_png.pixels[i];
         rgba img2_pixel2 = encrypted_png.pixels[i + 1];
 
-        byte b = Private::get_byte(img1_pixel1,
-                                   img1_pixel2,
-                                   img2_pixel1,
-                                   img2_pixel2);
+        byte b = Private::get_byte(img1_pixel1, img1_pixel2, img2_pixel1, img2_pixel2);
         output.push_back(b);
     }
 
@@ -178,7 +160,7 @@ void encrypt(image& key, std::vector<byte> data) {
     uint32_t length_of_data = data.size();
 
     uint free_space = key.pixels.size() / 2;
-    
+
     // Every 2 pixel can hold 1 byte of information
     // First 4 byte is lenght of data
     bool enough_space = length_of_data + 4 <= free_space;
@@ -196,7 +178,6 @@ void encrypt(image& key, std::vector<byte> data) {
         auto& pixel2 = key.pixels[i + 1];
         i += 2;
 
-        Private::encrypt_into_pixels(
-            pixel1, pixel2, one_byte);
+        Private::encrypt_into_pixels(pixel1, pixel2, one_byte);
     }
 }
