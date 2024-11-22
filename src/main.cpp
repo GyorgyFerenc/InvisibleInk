@@ -33,8 +33,7 @@ void encrypt_branch(cli_info& info) {
     try {
         auto key = load_png(info.key_file);
 
-        auto data =
-            read_data_to_be_encrypted(info.input_file);
+        auto data = read_data_to_be_encrypted(info.input_file);
 
         encrypt(key, data);
         save_png(key, info.output_file);
